@@ -67,7 +67,7 @@
                             </form>
                           </template>
                       <div class="">                            
-                        <table class="table table-striped table-ligth">
+                        <table class="table table-striped table-ligth" style="border-collapse:collapse; table-layout:fixed; ">
                           <thead>
                             <tr>
                               <th scope="col">Name</th>
@@ -83,7 +83,11 @@
                               <td>{{product.description}}</td>                            
                               <td>{{product.price}}</td>                            
                               <td>{{product.quantity}}</td>                            
-                              <td>{{product.image}}</td>                            
+                              <td><div class="container mt-12">
+                                    <div class="card bg-white">
+                                        <img :src="product.image" style="max-height: 12vh; max-width: 35vh;" alt="">
+                                    </div>
+                                </div></td>                            
                             </tr>         
                           </tbody> 
                         </table>
@@ -157,13 +161,6 @@
             console.log('Component has been created!');
             this.showAll()
         },
-        mounted() {},
-        beforeRouteEnter(to, from, next) { //Check if he is already loged
-            if (localStorage.getItem("token") == '') { //There is a token
-                next('/catalog')
-            } else{
-                next()
-            }
-        }
+        mounted() {}
     };
 </script>

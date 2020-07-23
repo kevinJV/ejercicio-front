@@ -53,13 +53,6 @@
                                     required
                                     placeholder="Description"
                                     class="form-control mb-3">
-                                <input 
-                                    v-model="image"
-                                    required
-                                    placeholder="Image"
-                                    value="happy.jpg"
-                                    hidden
-                                    class="form-control mb-3">
                                 <input
                                     required
                                     type="number"
@@ -72,6 +65,13 @@
                                     v-model="quantity"
                                     placeholder="Quantity"
                                     class="form-control mb-3">
+                                <!-- Got an example from: https://medium.com/js-dojo/how-to-upload-base64-images-in-vue-nodejs-4e89635daebc -->
+                                <div class="container mt-12">
+                                    <div class="card bg-white">
+                                        <img :src="image" style="max-height: 25vh;" alt="">
+                                        <input ref="imageFile" @change="handleImage" required class="custom-input" type="file" accept="image/*">
+                                    </div>
+                                </div>
                                 <div class="text-center">
                                     <button v-on:click="createProduct()" type="submit" class="btn my-4 btn-primary">Add product</button>
                                 </div>
@@ -97,13 +97,31 @@
             return {
                 name: '',
                 description: '',
-                image: 'happy.jpg',
+                image: '',
                 price: '',
                 quantity: '',
                 warningText: ''
             };
         },
         methods: {
+            handleImage(e) {
+                if(e.target.files[0].size > 798576){ //Due to the payload size limit, we should limit how big the image is initially
+                    console.error("The image is too big")
+                    this.image = ''
+                    this.$refs.imageFile.value=null
+                    this.warningText = "The image surpasses the size limit"
+                    return false
+                }
+                const selectedImage = e.target.files[0];
+                this.createBase64Image(selectedImage);
+            },
+            createBase64Image(fileObject) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.image = e.target.result;
+                };
+                reader.readAsDataURL(fileObject);
+            },
             logout: function() { 
                 //Due to time I opted a simple method of checking if the user has a Token or not in the localstorage
                 //Even if he manages to edit that if the token is not correct, the backend will know it since routes and APIs routes are protected
@@ -117,16 +135,23 @@
                 }
                 apiService.postProducto(localStorage.getItem("token"), this.name, this.description, this.image, this.price, this.quantity).then(response =>{
                     if(response.status != 201){
-                        console.log(response)
-                        console.error("There was a error")
+                        try {
+                            this.warningText = response.data[0].message                            
+                        } catch (error) {
+                            if(response.status = 413){
+                                this.warningText = "The image surpased the size limit"
+                            }else{
+                                this.warningText = "An error occurred"
+                            }
+                        }
                     }else{
-                        console.log(response)
                         this.warningText = "Product added!"
                         this.name = ''
                         this.description = ''
                         this.image = ''
                         this.quantity = ''
                         this.price = ''
+                        this.$refs.imageFile.value=null
                     }
                 })
             }
@@ -137,7 +162,7 @@
         mounted() {},
         beforeRouteEnter(to, from, next) { //Check if he is already loged
             if (localStorage.getItem("token") == '') { //There is a token
-                next('/catalog')
+                next('/login')
             } else{
                 next()
             }

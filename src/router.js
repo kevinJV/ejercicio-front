@@ -18,15 +18,6 @@ export default new Router({
   hash: false,
   routes: [
     {
-      path: "/",
-      name: "components",
-      components: {
-        header: AppHeader,
-        default: Components,
-        footer: AppFooter
-      }
-    },
-    {
       path: "/catalog",
       name: "catalog",
       components: {
@@ -52,7 +43,7 @@ export default new Router({
     },
     { 
       path: '*', 
-      redirect: '/' 
+      redirect: '/catalog' 
     },
   ],
   scrollBehavior: to => {
