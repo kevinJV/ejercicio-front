@@ -37,6 +37,9 @@
                                         required
                                         placeholder="Search text"
                                         class="form-control my-4">
+                                        <div class="align-items-center">
+                                          <p>Items found: {{this.products.length}}</p>
+                                        </div>
                                       </div>
                                       <div class="col-lg-2 col-sm-2">
                                         <input
@@ -128,7 +131,6 @@
                         console.log(response)
                         console.error("There was a error")
                     }else{
-                        console.log(response)
                         this.products = response.data.result
                     }
                 })
@@ -140,7 +142,6 @@
                       console.error("There was a error")
                     }else{
                       this.products = response.data
-                      console.log(this.products)
                     }
                 })
             }

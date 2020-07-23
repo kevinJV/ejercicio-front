@@ -56,12 +56,16 @@
                                 <input
                                     required
                                     type="number"
+                                    :max="9999999999"
+                                    :min="1"
                                     v-model="price"
                                     placeholder="Price"
                                     class="form-control mb-3">
                                 <input
                                     required
                                     type="number"
+                                    :max="2147483646"
+                                    :min="0"
                                     v-model="quantity"
                                     placeholder="Quantity"
                                     class="form-control mb-3">
@@ -112,6 +116,7 @@
                     this.warningText = "The image surpasses the size limit"
                     return false
                 }
+                this.warningText = ''
                 const selectedImage = e.target.files[0];
                 this.createBase64Image(selectedImage);
             },
@@ -129,8 +134,9 @@
                 this.$router.push('/login');
             },
             createProduct: function(){
-                if(this.name == '' || this.description == '' || this.image == '' || this.price == '' || this.quantity == ''){
-                    this.warningText = 'Missing necesary data to create a product'
+                console.log((this.price).length)
+                if(this.name == '' || this.description == '' || this.image == '' || this.price == '' || this.price >= 10000000000 || this.quantity >= 2147483647 || this.quantity == ''){
+                    this.warningText = 'You have an error on the form'
                     return false;
                 }
                 apiService.postProducto(localStorage.getItem("token"), this.name, this.description, this.image, this.price, this.quantity).then(response =>{
@@ -138,10 +144,11 @@
                         try {
                             this.warningText = response.data[0].message                            
                         } catch (error) {
-                            if(response.status = 413){
+                            if(response.status == 413){
                                 this.warningText = "The image surpased the size limit"
                             }else{
                                 this.warningText = "An error occurred"
+                                console.log(response)
                             }
                         }
                     }else{
