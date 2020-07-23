@@ -1,5 +1,6 @@
 import axios from 'axios';
-const API_URL = 'http://localhost:3333/api/v1';
+const API_URL = process.env.VUE_APP_API_URL;
+// const API_URL = "https://ejercicio-back.herokuapp.com/api/v1";
 
 export class APIService {
 

@@ -23,7 +23,10 @@
                           body-classes="px-lg-1 py-lg-1"
                           class="border-0 mb-3">
                           <template>
-                            <div class="display-3 mb-0 mt-4 text-center">
+                            <div class="text-center mt-4" v-if="this.warningText != ''">
+                                <base-button v-on:click="warningText=''" class="btn-1" outline type="warning">{{this.warningText}}</base-button>
+                            </div>
+                            <div class="display-3 mb-0 mt-2 text-center">
                                 <small>Search products</small>
                                 <button v-on:click="showAll()" class="ml-3 btn my-4 btn-warning">show all</button>
                             </div>
@@ -118,7 +121,8 @@
               text: '',
               name: true,
               description: false,
-              products: []
+              products: [],
+              warningText: ''
             };
         },
         methods: {
@@ -126,22 +130,28 @@
                 if(this.text == ''){
                   return false
                 }
+                this.warningText = "Loading..."
                 apiService.getSearchProducts(this.text, this.name, this.description).then(response =>{
                     if(response.status != 200){
+                        this.warningText = "Sorry and error ocurred"
                         console.log(response)
                         console.error("There was a error")
                     }else{
+                        this.warningText = "Done!"
                         this.products = response.data.result
                     }
                 })
             },
             showAll: function(){
+                this.warningText = "Loading..."
                 apiService.getProducts().then(response =>{
                     if(response.status != 200){
+                      this.warningText = "Sorry and error ocurred"
                       console.log(response)
                       console.error("There was a error")
                     }else{
                       this.products = response.data
+                      this.warningText = "Done!"
                     }
                 })
             }

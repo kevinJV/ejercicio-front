@@ -68,13 +68,14 @@
         methods: {
             login: function() { 
                 if(this.email != '' && this.password != ''){
+                    this.warningText = "Loading..."
                     apiService.postLogin(this.email, this.password).then(response =>{
                         if(response.status != 200){
                             console.error("There was a error")
                             this.warningText = response.data[0].message //While this is a bad practice, due to time constraints I could not do more, wasted enough time in my frontend
                         }else{
                             localStorage.setItem("token", response.data.token);
-                            console.log(localStorage.getItem("token"))
+                            this.warningText = ""                            
                             this.$router.push('/admin')
                         }
                     })

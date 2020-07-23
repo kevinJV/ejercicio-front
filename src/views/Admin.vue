@@ -139,6 +139,8 @@
                     this.warningText = 'You have an error on the form'
                     return false;
                 }
+                
+                this.warningText = "Loading..."
                 apiService.postProducto(localStorage.getItem("token"), this.name, this.description, this.image, this.price, this.quantity).then(response =>{
                     if(response.status != 201){
                         try {
