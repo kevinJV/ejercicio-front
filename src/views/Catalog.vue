@@ -14,8 +14,8 @@
             <span class="span-100"></span>
         </div>
         <!-- <div class="container shape-container d-flex align-items-center"> -->
-        <div class="container shape-container d-flex " style="overflow: auto;">
-          <div class="container pt-lg-md" style="overflow: auto;">
+        <div class="container shape-container d-flex " style="overflow: auto; max-width: 100vw;">
+          <div class="container" style="overflow: auto; max-width: 75vw;">
             <div class="row justify-content-center" style="">
                 <div class="col-lg-12" style="">
                     <card type="secondary" shadow
@@ -91,7 +91,7 @@
                               <td>{{product.quantity}}</td>                            
                               <td><div class="container mt-12">
                                     <div class="card bg-white">
-                                        <img :src="product.image" style="max-height: 12vh; max-width: 35vh;" alt="">
+                                        <img :src="product.image" style="object-fit: contain; width: 100%; height: 200px;" alt="">
                                     </div>
                                 </div></td>                            
                             </tr>         

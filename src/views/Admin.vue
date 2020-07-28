@@ -72,12 +72,12 @@
                                 <!-- Got an example from: https://medium.com/js-dojo/how-to-upload-base64-images-in-vue-nodejs-4e89635daebc -->
                                 <div class="container mt-12">
                                     <div class="card bg-white">
-                                        <img :src="image" style="max-height: 25vh;" alt="">
+                                        <img :src="image" style="object-fit: contain; width: 100%; max-height: 200px;" alt="">
                                         <input ref="imageFile" @change="handleImage" required class="custom-input" type="file" accept="image/*">
                                     </div>
                                 </div>
                                 <div class="text-center">
-                                    <button v-on:click="createProduct()" type="submit" class="btn my-4 btn-primary">Add product</button>
+                                    <button v-on:click="addProduct()" type="submit" class="btn my-4 btn-primary">Add product</button>
                                 </div>
                             </form>
                             <div class="text-center" v-if="this.warningText != ''">
@@ -91,6 +91,7 @@
     </section>
 </template>
 <script>
+    import axios from 'axios';
     import { APIService } from "../APIService";
     const apiService = new APIService();
 
@@ -104,21 +105,33 @@
                 image: '',
                 price: '',
                 quantity: '',
-                warningText: ''
+
+                warningText: '',
+
+                file: '',
+                fileContents: '',
+                formData: '',
+                preset: process.env.VUE_APP_CLOUDINARY_PRESET, //This should be put in the env
+                tags: 'test-excercise',
+                result: '',
+                imageURL: ''
             };
         },
         methods: {
-            handleImage(e) {
-                if(e.target.files[0].size > 798576){ //Due to the payload size limit, we should limit how big the image is initially
+            handleImage(event) {
+                //Lets check if the image it's too big
+                if(event.target.files[0].size > 32000000 ){
                     console.error("The image is too big")
                     this.image = ''
                     this.$refs.imageFile.value=null
                     this.warningText = "The image surpasses the size limit"
                     return false
                 }
+
                 this.warningText = ''
-                const selectedImage = e.target.files[0];
-                this.createBase64Image(selectedImage);
+                this.file = event.target.files[0];
+                //To make a preview available
+                this.createBase64Image(this.file);
             },
             createBase64Image(fileObject) {
                 const reader = new FileReader();
@@ -134,19 +147,19 @@
                 this.$router.push('/login');
             },
             createProduct: function(){
-                console.log((this.price).length)
+                //Rudementary validators, better ones can be made
                 if(this.name == '' || this.description == '' || this.image == '' || this.price == '' || this.price >= 10000000000 || this.quantity >= 2147483647 || this.quantity == ''){
                     this.warningText = 'You have an error on the form'
                     return false;
                 }
                 
-                this.warningText = "Loading..."
-                apiService.postProducto(localStorage.getItem("token"), this.name, this.description, this.image, this.price, this.quantity).then(response =>{
+                this.warningText = "Creating product..."
+                apiService.postProducto(localStorage.getItem("token"), this.name, this.description, this.imageURL, this.price, this.quantity).then(response =>{
                     if(response.status != 201){
                         try {
                             this.warningText = response.data[0].message                            
                         } catch (error) {
-                            if(response.status == 413){
+                            if(response.status == 413){ //This was made before cloudinary was used
                                 this.warningText = "The image surpased the size limit"
                             }else{
                                 this.warningText = "An error occurred"
@@ -154,6 +167,7 @@
                             }
                         }
                     }else{
+                        //Lets clean the vars
                         this.warningText = "Product added!"
                         this.name = ''
                         this.description = ''
@@ -163,10 +177,44 @@
                         this.$refs.imageFile.value=null
                     }
                 })
-            }
+            },
+            prepareFormData: function(){
+                this.formData = new FormData();
+                this.formData.append("upload_preset", this.preset);
+                this.formData.append("tags", this.tags);
+                this.formData.append("file", this.fileContents);
+            },
+            addProduct: function(){
+                let reader = new FileReader()
+
+                this.warningText = "Uploading image..."
+
+                reader.addEventListener('load', function(){
+                    this.fileContents = reader.result
+                    this.prepareFormData()
+
+                    let cloudinaryURL = process.env.VUE_APP_CLOUDINARY_URL
+
+                    let requestObj = {
+                        url: cloudinaryURL,
+                        method: 'POST',
+                        data: this.formData                    
+                    }
+
+                    axios(requestObj).then(response => {
+                        this.result = response.data
+                        this.imageURL = this.result.url
+                        this.createProduct()
+                    }).catch( error => {
+                        console.log(error)
+                        this.warningText = "There was an error uploading the image to the server"
+                    })
+                }.bind(this), false)
+
+                reader.readAsDataURL(this.file)
+            },
         },
         created() {
-            console.log('Component has been created!');
         },
         mounted() {},
         beforeRouteEnter(to, from, next) { //Check if he is already loged
